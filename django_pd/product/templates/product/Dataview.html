@@ -9,19 +9,7 @@
 </head>
 <body class="bg-info" style="--bs-bg-opacity: .5;">
     <div class ="">
-        <h1 class =" d-flex justify-content-center">Upload Data or Type Below</h1>
-        <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
-            
-            <div >
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="form-floating">
-                        {{ form.as_p }}
-                        <button type="submit">Submit</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        
         {% if table_data %}
             <div class="mt-50px" >
                 <h1 class =" d-flex justify-content-center">Data Table</h1>
