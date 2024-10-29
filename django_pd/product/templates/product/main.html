@@ -1,0 +1,12 @@
+
+{% extends 'base.html' %}
+{% block title %}Home{% endblock title %}
+
+{% block content %}
+    <h1>Hello Loki</h1>
+    {{products|safe}}
+<hr>
+    {{purchase|safe}}
+<hr>
+{{df|safe}}
+{% endblock content %}
