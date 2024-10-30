@@ -29,12 +29,21 @@ import base64
     
 #     return render(request,'product/main.html',context)
 def home(request):
+    # print(plt.style.available)
+    GRAPH_CHOICES = {c:c for c in plt.style.available}
+    
+    
     table_data = None  # Ensure table_data is always defined
     if request.method == 'POST':
         form = DataForm(request.POST, request.FILES)
         if form.is_valid():
             text_data = form.cleaned_data.get('text_data')
             file_data = form.cleaned_data.get('file_data')
+            graph_type = form.cleaned_data.get('graph_type')  # Get selected graph type
+            graph_size = form.cleaned_data.get('graph_size')  # Get selected graph size
+            graph_style = form.cleaned_data.get('graph_style')  # Get selected graph style
+            # print(graph_style)
+            
             
             # Print text data if available
             # Handle text data as a sequence of numbers
@@ -64,102 +73,49 @@ def home(request):
             
             # return HttpResponse("Data received. Check console for output.")
             # Convert DataFrame to HTML table for rendering
+            figsize = None
+            if graph_size == 'S':
+                figsize = (5,3)
+            elif graph_size == 'M':
+                figsize = (8,5)
+            else:
+                figsize = (12,8)
+            # Generate the selected graph
             if data is not None:
-                table_data = data.reset_index().values.tolist()  # Convert to list of [index, value] pairs
-                ###############################
-                #          LINE GRAPH         #
-                ###############################
-                # Create the plot with customizations
-                plt.figure(figsize=(8, 5))  # Custom size plt.style.use('ggplot')
-                plt.style.use('ggplot')
-                
-                ax = plt.gca()  # Get current axes
-                ax.set_facecolor('#0f0f0f')  # Set plot (axes) background color
-                plt.plot(data, color='green', linewidth=2, marker='o', markersize=5)  # Line style
-                plt.title("Customized Line Graph of Input Data", fontsize=16, color='darkblue')  # Title customization
-                plt.xlabel("Index", fontsize=12, color='gray')
-                plt.ylabel("Value", fontsize=12, color='gray')
-                # plt.grid(True, linestyle=':', color='lightgray')  # Custom grid style
-                
-                # Save plot to an in-memory bytes buffer
                 buffer = io.BytesIO()
+                plt.figure(figsize=figsize)
+                
+                if graph_type == 'line':
+                    plt.style.use(GRAPH_CHOICES[graph_style])
+                    plt.plot(data, linewidth=2, marker='o', markersize=5)
+                    plt.title("Line Graph")
+                    
+                    
+                
+                elif graph_type == 'bar':
+                    plt.style.use(GRAPH_CHOICES[graph_style])
+                    plt.bar(data.index, data.values)
+                    plt.title("Bar Chart")
+                    
+                
+                elif graph_type == 'pie':
+                    plt.style.use(GRAPH_CHOICES[graph_style])
+                    plt.pie(data, labels=data.index, autopct='%1.1f%%', startangle=90, colors=plt.cm.Paired.colors)
+                    plt.title("Pie Chart")
+                
                 plt.savefig(buffer, format='png')
                 buffer.seek(0)
                 
-                # Encode the buffer to a base64 string to embed in HTML
-                line_graph_url = base64.b64encode(buffer.getvalue()).decode('utf-8')
+                # Convert to base64 to display in HTML
+                graph_url = base64.b64encode(buffer.getvalue()).decode('utf-8')
                 buffer.close()
-                plt.close()  # Close the plot to free memory
-                ###############################
-                #          BAR GRAPH         #
-                ###############################   
-                # Create the plot
-                # Create a bar chart using plt.bar()
-                # plt.bar(data.index, data.values, color='skyblue', edgecolor='black')
-                # plt.style.use('grayscale')
-                # plt.title("Bar Chart of Input Data", fontsize=16, color='darkblue')
-                # plt.xlabel("Index", fontsize=12, color='gray')
-                # plt.ylabel("Value", fontsize=12, color='gray')
-                # plt.grid(axis='y', linestyle=':', color='lightgray')  # Grid on the y-axis only
-                #######################
-                #       styles        #
-                #######################
-                """
-                print(plt.style.available)
-                    ['bmh', 'classic', 'dark_background', 'fast', 'fivethirtyeight', 'ggplot', 'grayscale', 'seaborn', 'seaborn-bright', 'seaborn-dark', 'tableau-colorblind10', ...]
-
-                """
-                plt.style.use('tableau-colorblind10')
-                plt.bar(data.index,data.values)
-                plt.title("Bar Chart of Input Data")
-                plt.xlabel("Index")
-                plt.ylabel("Value")
-
-
-                
-                # Save plot to an in-memory bytes buffer
-                buffer = io.BytesIO()
-                plt.savefig(buffer, format='png')
-                buffer.seek(0)
-                
-                # Encode the buffer to a base64 string to embed in HTML
-                bar_graph_url = base64.b64encode(buffer.getvalue()).decode('utf-8')
-                buffer.close()
-                plt.close()  # Close the plot to free memory
-                ###############################
-                #          PIE GRAPH         #
-                ###############################   
-                # Create the plot
-                plt.figure(figsize=(8, 5), facecolor='#f5f5f5')
-                plt.style.use('grayscale')
-                # Create a pie chart using plt.pie()
-                plt.pie(data, labels=data.index, autopct='%1.1f%%', startangle=90, colors=plt.cm.Paired.colors)
-                plt.title("Pie Chart of Input Data", fontsize=16, color='darkblue')
-                # plt.figure()
-                # plt.style.use('ggplot')
-                # data.plot(kind='pie')
-                # plt.title("Pie Graph of Input Data")
-                # plt.xlabel("Index")
-                # plt.ylabel("Value")
-                
-                # Save plot to an in-memory bytes buffer
-                buffer = io.BytesIO()
-                plt.savefig(buffer, format='png')
-                buffer.seek(0)
-                
-                # Encode the buffer to a base64 string to embed in HTML
-                pie_graph_url = base64.b64encode(buffer.getvalue()).decode('utf-8')
-                buffer.close()
-                plt.close()  # Close the plot to free memory
-                             
-            #table_html = data_frame.to_html(index=True)  # index=True to show default pandas indexes
+                plt.close()
+                # print(graph_url)
 
             return render(request, 'product/Dataview.html', {
-                'table_data': table_data,
-                'line_graph_url': line_graph_url , # Pass graph URL to the template
-                'bar_graph_url': bar_graph_url,  # Pass bar graph URL to the template
-                'pie_graph_url': pie_graph_url  # Pass bar graph URL to the template
-                })
+                'table_data': data.reset_index().values.tolist(),
+                'graph_url': graph_url  # Pass selected graph URL to the template
+            })
         
     
     else:

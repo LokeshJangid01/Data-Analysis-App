@@ -17,67 +17,21 @@
                     {% csrf_token %}
                     <div class="form-floating">
                         {{ form.as_p }}
-                        <button type="submit">Submit</button>
+                        <button class="btn btn-primary" type="submit">Submit</button>
                     </div>
+                    <!-- {% csrf_token %}
+                    {{ form.text_data }}
+                    {{ form.file_data }}
+                    
+                    <div class="form-group">
+                        {{ form.graph_type.label_tag }}
+                        {{ form.graph_type }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Generate Graph</button> -->
                 </form>
             </div>
         </div>
-        {% if table_data %}
-            <div class="mt-50px" >
-                <h1 class =" d-flex justify-content-center">Data Table</h1>
-                <div class="d-flex justify-content-center">
-                    <table class="table table-hover bg-info table-striped" style="--bs-bg-opacity: .5;" >
-                        <tr>
-                            <th scope="col">Index</th>
-                            <th scope="col">Value</th>
-                        </tr>
-                        {% for row in table_data %}
-                            <tr>
-                                
-                                <td>{{ row.0 }}</td>  <!-- Index -->
-                                <td>{{ row.1 }}</td>  <!-- Value -->
-                            </tr>
-                        {% endfor %}
-                    </table>
-                </div>
-            </div>
-        {% endif %}
-
-        <!-- {% if line_graph_url %}
-            <h2>Line Graph</h2>
-            <img src="data:image/png;base64,{{ line_graph_url }}" alt="Data Line Graph" class="img-fluid" />
-        {% endif %}
-        {% if bar_graph_url %}
-            <h2>Bar Graph</h2>
-            <img src="data:image/png;base64,{{ bar_graph_url }}" alt="Data Bar Graph" class="img-fluid" />
-        {% endif %}
-        {% if pie_graph_url %}
-            <h2>Bar Graph</h2>
-            <img src="data:image/png;base64,{{ pie_graph_url }}" alt="Data Pie Graph" class="img-fluid" />
-        {% endif %} -->
-        <div class="container text-center">
-            <div class="row">
-                {% if line_graph_url %}
-                    <h2>Line Graph</h2>
-                    <img src="data:image/png;base64,{{ line_graph_url }}" alt="Data Line Graph" class="img-fluid" />
-                {% endif %}
-            </div>
-            <div class="row">
-              <div class="col">
-                {% if bar_graph_url %}
-                    <h2>Bar Graph</h2>
-                    <img src="data:image/png;base64,{{ bar_graph_url }}" alt="Data Bar Graph" class="img-fluid" />
-                {% endif %}
-              </div>
-              <div class="col">
-                {% if pie_graph_url %}
-                    <h2>Bar Graph</h2>
-                    <img src="data:image/png;base64,{{ pie_graph_url }}" alt="Data Pie Graph" class="img-fluid" />
-                {% endif %}
-              </div>
-            </div>
-          </div>
-
+        
         
     </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
