@@ -3,7 +3,11 @@ from .models import Product,Purchase
 import pandas as pd
 from django.http import HttpResponse
 from .forms import DataForm
+import matplotlib
+matplotlib.use('Agg')  # Set backend to Agg for non-GUI environments
+import matplotlib.pyplot as plt
 import io
+import base64
 
 
 # Create your views here.
@@ -25,12 +29,21 @@ import io
     
 #     return render(request,'product/main.html',context)
 def home(request):
+    # print(plt.style.available)
+    GRAPH_CHOICES = {c:c for c in plt.style.available}
+    
+    
     table_data = None  # Ensure table_data is always defined
     if request.method == 'POST':
         form = DataForm(request.POST, request.FILES)
         if form.is_valid():
             text_data = form.cleaned_data.get('text_data')
             file_data = form.cleaned_data.get('file_data')
+            graph_type = form.cleaned_data.get('graph_type')  # Get selected graph type
+            graph_size = form.cleaned_data.get('graph_size')  # Get selected graph size
+            graph_style = form.cleaned_data.get('graph_style')  # Get selected graph style
+            # print(graph_style)
+            
             
             # Print text data if available
             # Handle text data as a sequence of numbers
@@ -60,11 +73,49 @@ def home(request):
             
             # return HttpResponse("Data received. Check console for output.")
             # Convert DataFrame to HTML table for rendering
+            figsize = None
+            if graph_size == 'S':
+                figsize = (5,3)
+            elif graph_size == 'M':
+                figsize = (8,5)
+            else:
+                figsize = (12,8)
+            # Generate the selected graph
             if data is not None:
-                table_data = data.reset_index().values.tolist()  # Convert to list of [index, value] pairs
-            #table_html = data_frame.to_html(index=True)  # index=True to show default pandas indexes
+                buffer = io.BytesIO()
+                plt.figure(figsize=figsize)
+                
+                if graph_type == 'line':
+                    plt.style.use(GRAPH_CHOICES[graph_style])
+                    plt.plot(data, linewidth=2, marker='o', markersize=5)
+                    plt.title("Line Graph")
+                    
+                    
+                
+                elif graph_type == 'bar':
+                    plt.style.use(GRAPH_CHOICES[graph_style])
+                    plt.bar(data.index, data.values)
+                    plt.title("Bar Chart")
+                    
+                
+                elif graph_type == 'pie':
+                    plt.style.use(GRAPH_CHOICES[graph_style])
+                    plt.pie(data, labels=data.index, autopct='%1.1f%%', startangle=90, colors=plt.cm.Paired.colors)
+                    plt.title("Pie Chart")
+                
+                plt.savefig(buffer, format='png')
+                buffer.seek(0)
+                
+                # Convert to base64 to display in HTML
+                graph_url = base64.b64encode(buffer.getvalue()).decode('utf-8')
+                buffer.close()
+                plt.close()
+                # print(graph_url)
 
-            # return render(request, 'product/table.html', {'table_html': table_html})
+            return render(request, 'product/Dataview.html', {
+                'table_data': data.reset_index().values.tolist(),
+                'graph_url': graph_url  # Pass selected graph URL to the template
+            })
         
     
     else:
@@ -72,5 +123,5 @@ def home(request):
     
     return render(request, 'product/home.html', {
         'form': form,
-        'table_data': table_data
+        
         })
